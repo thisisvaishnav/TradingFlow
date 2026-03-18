@@ -4,12 +4,17 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./types": "./metadata/index.ts"
+    ".": "./index.ts",
+    "./types": "./types/index.ts",
+    "./metadata": "./metadata/index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
   }
 }
