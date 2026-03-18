@@ -13,6 +13,9 @@ const UserSchema = new Schema({
   username: {
     type: String,
     required: true,
+    unique: true,
+    trim: true,
+    lowercase: true,
   },
   password: {
     type: String,
@@ -80,10 +83,7 @@ const WorkflowNodesSchema = new Schema(
   {
     id: { type: String, required: true },
     position: PositionSchema,
-    type: {
-      type: Schema.Types.ObjectId,
-      ref: "Nodes",
-    },
+    type: { type: String },
     data: NodeDataSchema,
   },
   { _id: false }
@@ -112,8 +112,7 @@ const ExecutionSchema = new Schema({
     required: true,
   },
   nodeId: {
-    type: Schema.Types.ObjectId,
-    ref: "Nodes",
+    type: String,
     required: true,
   },
   status: {

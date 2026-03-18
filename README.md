@@ -1,159 +1,151 @@
-# Turborepo starter
+# TradingFlow
 
-This Turborepo starter is maintained by the Turborepo core team.
+A workflow-based trading automation platform. Users design visual workflows that connect **triggers** (price alerts, timers) to **actions** (exchange orders) — and the system executes them automatically.
 
-## Using this example
+## How It Works
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
+```
+User builds workflow in UI  -->  Backend saves it to MongoDB  -->  Executor polls & runs it
 ```
 
-## What's inside?
+1. **Design** a workflow in the browser using a drag-and-drop node editor (React Flow).
+2. **Connect** trigger nodes (price threshold, timer interval) to action nodes (Hyperliquid, Backpack, Lighter exchange orders).
+3. **Save** the workflow via the REST API.
+4. **Executor** picks it up, continuously evaluates trigger conditions, and fires the action chain when conditions are met.
+5. **Track** every execution (status, timing, errors) on the executions page.
 
-This Turborepo includes the following packages/apps:
+## Architecture
 
-### Apps and Packages
+```
+apps/
+  client/        React + TypeScript + Vite + Tailwind + shadcn/ui
+  backend/       Bun + Express REST API + JWT auth
+  executor/      Bun background worker — trigger poller & graph runner
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+packages/
+  common/        Shared Zod schemas, TypeScript types, asset metadata
+  db/            Mongoose models (User, Workflow, Execution)
 ```
 
-Without global `turbo`, use your package manager:
+### Data flow
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```
+┌─────────┐   create/update   ┌─────────┐   read/write   ┌─────────┐
+│  Client  │ ───────────────▶  │ Backend │ ─────────────▶  │ MongoDB │
+│ (React)  │   view executions │ (Express)│                │         │
+└─────────┘ ◀──────────────── └─────────┘ ◀───────────── └─────────┘
+                                                               │  ▲
+                                                    load       │  │  write
+                                                  workflows    │  │ results
+                                                               ▼  │
+                                                          ┌──────────┐
+                                                          │ Executor │
+                                                          │  (Bun)   │
+                                                          └──────────┘
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## Node Types
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+### Triggers
 
-```sh
-turbo build --filter=docs
+| Type | Metadata | Fires when |
+|---|---|---|
+| **Price-trigger** | `asset`, `price` | Current market price reaches or exceeds the target |
+| **Timer** | `time` (seconds) | Every N seconds since last fire |
+
+### Actions (exchange adapters)
+
+| Type | What it does |
+|---|---|
+| **Hyperliquid** | Places a LONG/SHORT order on Hyperliquid |
+| **Backpack** | Places a LONG/SHORT order on Backpack exchange |
+| **Lighter** | Places a LONG/SHORT order on Lighter exchange |
+
+Supported assets: **SOL**, **BTC**, **ETH**.
+
+## Getting Started
+
+### Prerequisites
+
+- [Bun](https://bun.sh) v1.3+
+- A running MongoDB instance
+
+### Install
+
+```bash
+bun install
 ```
 
-Without global `turbo`:
+### Environment variables
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+Create a `.env` file in the project root (Bun auto-loads it):
+
+```env
+MONGO_URI=mongodb://localhost:27017/tradingflow
+JWT_SECRET=your-secret-here
+
+# Optional
+VITE_API_BASE_URL=http://localhost:3000
+CORS_ORIGIN=http://localhost:5173
+EXECUTOR_POLL_INTERVAL_MS=10000
 ```
 
-### Develop
+### Run everything
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
+```bash
+bun run dev
 ```
 
-Without global `turbo`, use your package manager:
+This starts all three apps via Turborepo:
 
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+| App | URL / Port | Description |
+|---|---|---|
+| **client** | `http://localhost:5173` | React UI |
+| **backend** | `http://localhost:3000` | REST API |
+| **executor** | background process | Workflow poller & runner |
+
+### Run individually
+
+```bash
+# Client only
+bun run dev --filter=client
+
+# Backend only
+bun run dev --filter=backend
+
+# Executor only
+cd apps/executor && bun run dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## API Routes
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| `POST` | `/signup` | No | Create a new account |
+| `POST` | `/signin` | No | Sign in, receive JWT |
+| `GET` | `/workflow` | Yes | List user's workflows |
+| `GET` | `/workflow/:id` | Yes | Get a single workflow |
+| `POST` | `/workflow` | Yes | Create a new workflow |
+| `PUT` | `/workflow/:id` | Yes | Update existing workflow |
+| `GET` | `/workflow/execution/:id` | Yes | List executions for a workflow |
 
-```sh
-turbo dev --filter=web
-```
+## Executor Details
 
-Without global `turbo`:
+The executor is a long-lived Bun process that:
 
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
+1. Connects to MongoDB on startup
+2. Polls all workflows every 10 seconds (configurable via `EXECUTOR_POLL_INTERVAL_MS`)
+3. Evaluates trigger nodes — price triggers check live prices via CoinGecko, timer triggers fire on interval
+4. When a trigger fires, walks the workflow DAG in topological order and executes each downstream action node
+5. Records every node execution in the `Execution` collection (PENDING, COMPLETED, or FAILED)
+6. Halts the action chain on the first failure — the failed node is recorded and downstream nodes are skipped
+7. Shuts down gracefully on SIGINT / SIGTERM
 
-### Remote Caching
+## Tech Stack
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- **Runtime**: Bun
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Flow
+- **Backend**: Express, JWT, Mongoose
+- **Database**: MongoDB
+- **Monorepo**: Turborepo with Bun workspaces
+- **Validation**: Zod (shared schemas)
