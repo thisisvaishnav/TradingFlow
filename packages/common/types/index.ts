@@ -19,6 +19,7 @@ export const SigninSchema = z.object({
 });
 
 export const CreateWorkflowSchema = z.object({ 
+    name: z.string().optional(),
     nodes: z.array(z.object({
         id: z.string(),
         type: z.string(),
@@ -38,6 +39,9 @@ export const CreateWorkflowSchema = z.object({
 });
 
 export const UpdateWorkflowSchema = z.object({ 
+    name: z.string().optional(),
+    status: z.enum(["DRAFT", "ACTIVE", "INACTIVE"]).optional(),
+    isActive: z.boolean().optional(),
     nodes: z.array(z.object({
         id: z.string(),
         type: z.string().optional(),

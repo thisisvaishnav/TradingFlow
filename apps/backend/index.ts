@@ -16,7 +16,7 @@ const allowedOrigins = configuredAllowedOrigins.length ? configuredAllowedOrigin
 
 app.use(cors({
     origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 app.use(express.json());
@@ -151,6 +151,7 @@ app.post("/workflow", authenticateToken, async (req: AuthenticatedRequest, res) 
 
         const workflow = await WorkflowModel.create({
             userId,
+            name: parsedBody.data.name || "Untitled Workflow",
             nodes: normalizedNodes,
             edges: normalizedEdges
         });
@@ -198,14 +199,17 @@ app.put("/workflow/:workflowId", authenticateToken, async (req: AuthenticatedReq
             target: edge.target
         }));
 
+        const updateFields: Record<string, unknown> = {
+            nodes: normalizedNodes,
+            edges: normalizedEdges,
+        };
+        if (parsedBody.data.name !== undefined) updateFields.name = parsedBody.data.name;
+        if (parsedBody.data.status !== undefined) updateFields.status = parsedBody.data.status;
+        if (parsedBody.data.isActive !== undefined) updateFields.isActive = parsedBody.data.isActive;
+
         const updatedWorkflow = await WorkflowModel.findOneAndUpdate(
             { _id: req.params.workflowId, userId },
-            {
-                $set: {
-                    nodes: normalizedNodes,
-                    edges: normalizedEdges
-                }
-            },
+            { $set: updateFields },
             { new: true, runValidators: true }
         );
 
@@ -237,6 +241,77 @@ app.get("/workflow", authenticateToken, async (req: AuthenticatedRequest, res) =
         const workflows = await WorkflowModel.find({ userId });
         return res.status(200).json({
             workflows
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
+    }
+});
+
+app.patch("/workflow/:workflowId/toggle", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    const userId = getAuthenticatedUserId(req, res);
+    if (!userId) {
+        return;
+    }
+
+    try {
+        const workflow = await WorkflowModel.findOne({
+            _id: req.params.workflowId,
+            userId
+        });
+
+        if (!workflow) {
+            return res.status(404).json({
+                message: "Workflow not found"
+            });
+        }
+
+        const newIsActive = !workflow.isActive;
+        const newStatus = newIsActive ? "ACTIVE" : "INACTIVE";
+
+        const updatedWorkflow = await WorkflowModel.findOneAndUpdate(
+            { _id: req.params.workflowId, userId },
+            { $set: { isActive: newIsActive, status: newStatus } },
+            { new: true }
+        );
+
+        return res.status(200).json({
+            message: `Workflow ${newIsActive ? "activated" : "deactivated"}`,
+            workflow: updatedWorkflow
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Internal server error",
+            error: error instanceof Error ? error.message : "Unknown error"
+        });
+    }
+});
+
+app.delete("/workflow/:workflowId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+    const userId = getAuthenticatedUserId(req, res);
+    if (!userId) {
+        return;
+    }
+
+    try {
+        const workflow = await WorkflowModel.findOneAndDelete({
+            _id: req.params.workflowId,
+            userId
+        });
+
+        if (!workflow) {
+            return res.status(404).json({
+                message: "Workflow not found"
+            });
+        }
+
+        // Also delete associated executions
+        await ExecutionModel.deleteMany({ workflowId: req.params.workflowId });
+
+        return res.status(200).json({
+            message: "Workflow deleted"
         });
     } catch (error) {
         return res.status(500).json({
@@ -306,7 +381,7 @@ app.get("/workflow/execution/:workflowId", authenticateToken, async (req: Authen
     }
 });
 
-app.get("/workflow/execcution/:workflowId", authenticateToken, async (req: AuthenticatedRequest, res) => {
+app.get("/workflow/execution/:workflowId", authenticateToken, async (req: AuthenticatedRequest, res) => {
     return res.redirect(308, `/workflow/execution/${req.params.workflowId}`);
 });
 
