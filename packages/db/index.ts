@@ -98,6 +98,19 @@ const workflowSchema = new Schema({
     ref: "User",
     required: true,
   },
+  name: {
+    type: String,
+    default: "Untitled Workflow",
+  },
+  status: {
+    type: String,
+    enum: ["DRAFT", "ACTIVE", "INACTIVE"],
+    default: "DRAFT",
+  },
+  isActive: {
+    type: Boolean,
+    default: false,
+  },
   nodes: [WorkflowNodesSchema],
   edges: [EdgesSchema],
 });
