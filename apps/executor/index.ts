@@ -111,7 +111,7 @@ const start = async () => {
     console.error("[executor] MONGO_URI is not set — exiting.");
     process.exit(1);
   }
-
+  
   try {
     await connectToDatabase(mongoUri);
     console.log("[executor] Connected to MongoDB");
