@@ -67,7 +67,7 @@ const NodeDataSchema = new Schema(
   {
     kind: {
       type: String,
-      enum: ["ACTION", "TRIGGER"],
+      enum: ["ACTION", "TRIGGER", "NOTIFICATION"],
       required: true,
     },
     metadata: {

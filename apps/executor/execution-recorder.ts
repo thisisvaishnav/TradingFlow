@@ -12,6 +12,7 @@ const createExecution = async (params: {
   });
 };
 
+
 const completeExecution = async (executionId: string, output?: unknown) => {
   return ExecutionModel.findByIdAndUpdate(
     executionId,
@@ -19,6 +20,7 @@ const completeExecution = async (executionId: string, output?: unknown) => {
     { new: true },
   );
 };
+
 
 const failExecution = async (executionId: string, error: string) => {
   return ExecutionModel.findByIdAndUpdate(

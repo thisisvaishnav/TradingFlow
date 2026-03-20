@@ -5,7 +5,9 @@ export {
 export type {
     PriceTriggerMetadata,
     TimerNodeMetadata,
-    TradingMetadata
+    TradingMetadata,
+    EmailMetadata,
+    TelegramMetadata,
 } from "../metadata";
 
 export const SignupSchema = z.object({
@@ -28,7 +30,7 @@ export const CreateWorkflowSchema = z.object({
             y: z.number(),
         }),
         data: z.object({
-            kind: z.enum(["action", "trigger"]),
+            kind: z.enum(["action", "trigger", "notification"]),
             metadata: z.record(z.string(), z.unknown()),
         }),
     })),
@@ -50,7 +52,7 @@ export const UpdateWorkflowSchema = z.object({
             y: z.number(),
         }).optional(),
         data: z.object({
-            kind: z.enum(["action", "trigger"]),
+            kind: z.enum(["action", "trigger", "notification"]),
             metadata: z.record(z.string(), z.unknown()),
         }),
     })),

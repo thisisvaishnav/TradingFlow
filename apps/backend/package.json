@@ -7,6 +7,7 @@
     "dev": "bun --hot index.ts"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/bun": "latest"
   },
   "peerDependencies": {
@@ -17,6 +18,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mongoose": "^5.11.97",
+    "bcrypt": "^6.0.0",
     "common": "*",
     "cors": "^2.8.6",
     "db": "*",
