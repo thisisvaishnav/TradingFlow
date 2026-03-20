@@ -4,6 +4,12 @@ export type TradingMetadata = {
     symbol: (typeof SUPPORTED_ASSETS)[number]
 }
 
+export type LighterTradingMetadata = TradingMetadata & {
+    lighterPrivateKey: string;
+    lighterAccountIndex: number;
+    lighterApiKeyIndex: number;
+    lighterUrl: string;
+}
 
 export const SUPPORTED_ASSETS = ["SOL", "BTC", "ETH"];
 export type TimerNodeMetadata = {

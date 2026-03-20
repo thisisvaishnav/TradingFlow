@@ -6,6 +6,7 @@ export type {
     PriceTriggerMetadata,
     TimerNodeMetadata,
     TradingMetadata,
+    LighterTradingMetadata,
     EmailMetadata,
     TelegramMetadata,
 } from "../metadata";

@@ -1,4 +1,4 @@
-name: Deploy
+name: Deploy to Production
 
 on:
   push:
@@ -9,132 +9,41 @@ concurrency:
   group: deploy-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  TURBO_TEAM: ${{ vars.TURBO_TEAM }}
-
 jobs:
   ci:
     name: CI Checks
     uses: ./.github/workflows/ci.yml
     secrets: inherit
 
-  deploy-client:
-    name: Deploy Client
+  deploy:
+    name: Deploy to DigitalOcean
     runs-on: ubuntu-latest
     needs: ci
+    timeout-minutes: 10
     environment: production
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
         with:
-          bun-version: "1.3.10"
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script_stop: true
+          script: |
+            cd ~/tradingflow
 
-      - name: Cache Bun dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+            echo "==> Pulling latest code..."
+            git pull origin main
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            echo "==> Installing dependencies..."
+            bun install --frozen-lockfile
 
-      - name: Build client
-        run: bun run build
-        env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+            echo "==> Building all apps..."
+            bun run build
 
-      # Uncomment and configure for your deployment target:
+            echo "==> Restarting PM2 processes..."
+            pm2 restart ecosystem.config.cjs
 
-      # --- Vercel ---
-      # - uses: amondnet/vercel-action@v25
-      #   with:
-      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
-      #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-      #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-      #     vercel-args: --prod
-      #     working-directory: apps/client
-
-      # --- Cloudflare Pages ---
-      # - uses: cloudflare/wrangler-action@v3
-      #   with:
-      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      #     command: pages deploy apps/client/dist --project-name=tradingflow
-
-      # --- Netlify ---
-      # - uses: nwtgck/actions-netlify@v3
-      #   with:
-      #     publish-dir: apps/client/dist
-      #     production-deploy: true
-      #   env:
-      #     NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-      #     NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-  deploy-backend:
-    name: Deploy Backend
-    runs-on: ubuntu-latest
-    needs: ci
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      # Uncomment and configure for your deployment target:
-
-      # --- Railway ---
-      # - uses: bervProject/railway-deploy@main
-      #   with:
-      #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
-      #     service: backend
-
-      # --- Fly.io ---
-      # - uses: superfly/flyctl-actions/setup-flyctl@master
-      # - run: flyctl deploy --app tradingflow-backend
-      #   working-directory: apps/backend
-      #   env:
-      #     FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      # --- Docker + any registry ---
-      # - uses: docker/login-action@v3
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.actor }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
-      # - uses: docker/build-push-action@v6
-      #   with:
-      #     context: .
-      #     file: apps/backend/Dockerfile
-      #     push: true
-      #     tags: ghcr.io/${{ github.repository }}/backend:latest
-
-      - name: Placeholder
-        run: echo "Configure deployment target above"
-
-  deploy-executor:
-    name: Deploy Executor
-    runs-on: ubuntu-latest
-    needs: ci
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      # Same deployment options as backend — uncomment and configure:
-
-      # --- Railway ---
-      # - uses: bervProject/railway-deploy@main
-      #   with:
-      #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
-      #     service: executor
-
-      # --- Fly.io ---
-      # - uses: superfly/flyctl-actions/setup-flyctl@master
-      # - run: flyctl deploy --app tradingflow-executor
-      #   working-directory: apps/executor
-      #   env:
-      #     FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      - name: Placeholder
-        run: echo "Configure deployment target above"
+            echo "==> Deploy complete!"
+            pm2 status
