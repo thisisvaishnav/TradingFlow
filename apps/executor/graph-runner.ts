@@ -1,5 +1,6 @@
 import type { TradingMetadata } from "common";
 import { getExchangeAdapter } from "./exchange-adapters/index.ts";
+import { getNotificationHandler } from "./notification-handlers/index.ts";
 import {
   createExecution,
   completeExecution,
@@ -106,31 +107,58 @@ export const executeWorkflowFromTrigger = async (
     });
 
     try {
-      const adapter = getExchangeAdapter(node.type ?? "");
+      const isNotification = node.data.kind === "notification" || node.type === "Email" || node.type === "Telegram";
 
-      if (!adapter) {
-        await failExecution(
-          execution._id.toString(),
-          `No exchange adapter for node type "${node.type}"`,
-        );
-        console.warn(
-          `[graph-runner] Halting workflow ${workflow._id}: unknown node type "${node.type}"`,
-        );
-        return;
+      if (isNotification) {
+        const handler = getNotificationHandler(node.type ?? "");
+        if (!handler) {
+          await failExecution(
+            execution._id.toString(),
+            `No notification handler for node type "${node.type}"`,
+          );
+          console.warn(
+            `[graph-runner] Halting workflow ${workflow._id}: unknown notification type "${node.type}"`,
+          );
+          return;
+        }
+
+        const result = await handler(node.data.metadata);
+        if (!result.success) {
+          await failExecution(execution._id.toString(), result.message);
+          console.warn(
+            `[graph-runner] Halting workflow ${workflow._id}: notification failed at node ${nodeId}`,
+          );
+          return;
+        }
+
+        await completeExecution(execution._id.toString(), result);
+      } else {
+        const adapter = getExchangeAdapter(node.type ?? "");
+        if (!adapter) {
+          await failExecution(
+            execution._id.toString(),
+            `No exchange adapter for node type "${node.type}"`,
+          );
+          console.warn(
+            `[graph-runner] Halting workflow ${workflow._id}: unknown node type "${node.type}"`,
+          );
+          return;
+        }
+
+        const metadata = node.data.metadata as TradingMetadata;
+        const result = await adapter(metadata);
+
+        if (!result.success) {
+          await failExecution(execution._id.toString(), result.message);
+          console.warn(
+            `[graph-runner] Halting workflow ${workflow._id}: action failed at node ${nodeId}`,
+          );
+          return;
+        }
+
+        await completeExecution(execution._id.toString(), result);
       }
 
-      const metadata = node.data.metadata as TradingMetadata;
-      const result = await adapter(metadata);
-
-      if (!result.success) {
-        await failExecution(execution._id.toString(), result.message);
-        console.warn(
-          `[graph-runner] Halting workflow ${workflow._id}: action failed at node ${nodeId}`,
-        );
-        return;
-      }
-
-      await completeExecution(execution._id.toString(), result);
       console.log(
         `[graph-runner] Node ${nodeId} completed in workflow ${workflow._id}`,
       );

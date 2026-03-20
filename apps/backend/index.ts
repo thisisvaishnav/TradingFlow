@@ -1,8 +1,11 @@
 import express from "express";
 import cors from "cors";
+import bcrypt from "bcrypt";
 import { ExecutionModel, User, WorkflowModel, connectToDatabase } from "db/client";
 import { CreateWorkflowSchema, SigninSchema, SignupSchema, UpdateWorkflowSchema } from "common";
 import { authenticateToken, createToken, type AuthenticatedRequest } from "./auth-middleware";
+
+const SALT_ROUNDS = 12;
 
 const app = express();
 const defaultAllowedOrigins = [
@@ -56,9 +59,10 @@ app.post("/signup", async (req,res) => {
                 message: "Username already exists"
             });
         }
-        const user =  await User.create({
+        const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
+        const user = await User.create({
             username: normalizedUsername,
-            password: data.password
+            password: hashedPassword,
         });
 
         const token = createToken(user._id.toString(), user.username);
@@ -92,12 +96,15 @@ app.post("/signin", async (req,res) => {
     const normalizedUsername = data.username.toLowerCase();
 
     try {
-        const user = await User.findOne({
-            username: normalizedUsername,
-            password: data.password
-        });
-
+        const user = await User.findOne({ username: normalizedUsername });
         if (!user) {
+            return res.status(401).json({
+                message: "Invalid username or password"
+            });
+        }
+
+        const passwordMatch = await bcrypt.compare(data.password, user.password);
+        if (!passwordMatch) {
             return res.status(401).json({
                 message: "Invalid username or password"
             });

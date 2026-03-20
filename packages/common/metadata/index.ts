@@ -13,4 +13,16 @@ export type TimerNodeMetadata = {
 export type PriceTriggerMetadata = {
     asset: string;
     price: number; 
-};  
+};
+
+export type EmailMetadata = {
+    to: string;
+    subject: string;
+    body: string;
+};
+
+export type TelegramMetadata = {
+    botToken: string;
+    chatId: string;
+    message: string;
+};
