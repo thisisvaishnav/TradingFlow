@@ -128,6 +128,10 @@ const ExecutionSchema = new Schema({
     type: String,
     required: true,
   },
+  nodeName: {
+    type: String,
+    default: "Unknown Node",
+  },
   status: {
     type: String,
     enum: ["PENDING", "COMPLETED", "FAILED"],

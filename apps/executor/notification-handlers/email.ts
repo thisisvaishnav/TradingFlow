@@ -1,3 +1,5 @@
+import { Resend } from "resend";
+import { AlertEmail } from "../emails/alert-email.tsx";
 import type { NotificationResult } from "./index.ts";
 
 type EmailPayload = {
@@ -7,7 +9,10 @@ type EmailPayload = {
 };
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
-const EMAIL_FROM = process.env.EMAIL_FROM ?? "TradingFlow <alerts@tradingflow.app>";
+const EMAIL_FROM =
+  process.env.EMAIL_FROM ?? "TradingFlow <onboarding@resend.dev>";
+
+const resend = new Resend(RESEND_API_KEY);
 
 export const executeEmail = async (
   metadata: Record<string, unknown>,
@@ -24,34 +29,25 @@ export const executeEmail = async (
 
   console.log(`[email] Sending to ${to}: "${subject}"`);
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: EMAIL_FROM,
-      to: [to],
-      subject: subject || "TradingFlow Alert",
-      text: body || "",
-    }),
+  const { data, error } = await resend.emails.send({
+    from: EMAIL_FROM,
+    to: [to],
+    subject: subject || "TradingFlow Alert",
+    react: AlertEmail({ subject: subject || "TradingFlow Alert", body: body || "" }),
   });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(`[email] Resend API error (${response.status}):`, errorBody);
+  if (error) {
+    console.error("[email] Resend SDK error:", error);
     return {
       success: false,
-      message: `Email send failed (${response.status}): ${errorBody}`,
+      message: `Email send failed: ${error.message}`,
     };
   }
 
-  const result = await response.json();
-  console.log(`[email] Sent successfully, id: ${result.id}`);
+  console.log(`[email] Sent successfully, id: ${data?.id}`);
 
   return {
     success: true,
-    message: `Email sent to ${to} (id: ${result.id})`,
+    message: `Email sent to ${to} (id: ${data?.id})`,
   };
 };
