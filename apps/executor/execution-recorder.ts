@@ -3,10 +3,12 @@ import { ExecutionModel } from "db/client";
 const createExecution = async (params: {
   workflowId: string;
   nodeId: string;
+  nodeName: string;
 }) => {
   return ExecutionModel.create({
     workflowId: params.workflowId,
     nodeId: params.nodeId,
+    nodeName: params.nodeName,
     status: "PENDING",
     startTime: new Date(),
   });

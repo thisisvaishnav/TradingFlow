@@ -17,6 +17,28 @@ export type WorkflowNode = {
   };
 };
 
+const NODE_TYPE_LABELS: Record<string, string> = {
+  "Price-trigger": "Price Trigger",
+  "timer": "Timer",
+  "Hyperliquid": "Hyperliquid",
+  "Backpack": "Backpack",
+  "Lighter": "Lighter",
+  "Email": "Email",
+  "Telegram": "Telegram",
+};
+
+const KIND_LABELS: Record<string, string> = {
+  ACTION: "Action",
+  TRIGGER: "Trigger",
+  NOTIFICATION: "Notification",
+};
+
+const getNodeDisplayName = (node: WorkflowNode): string => {
+  const typeLabel = NODE_TYPE_LABELS[node.type ?? ""] ?? node.type ?? "Unknown";
+  const kindLabel = KIND_LABELS[node.data.kind] ?? node.data.kind;
+  return `${typeLabel} (${kindLabel})`;
+};
+
 export type WorkflowEdge = {
   id: string;
   source: string;
@@ -104,6 +126,7 @@ export const executeWorkflowFromTrigger = async (
     const execution = await createExecution({
       workflowId: workflow._id,
       nodeId,
+      nodeName: getNodeDisplayName(node),
     });
 
     try {
