@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = "http://localhost:3000";
+const DEFAULT_API_BASE_URL = "http://localhost:3001";
 const AUTH_TOKEN_KEY = "tradingflow_auth_token";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
