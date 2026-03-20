@@ -1,0 +1,1244 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is([data-theme="dark"] *));
+
+/* ─── DESIGN TOKENS ─── */
+@theme inline {
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+}
+
+/* ─── DARK THEME (default) ─── */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg-base: #09090b;
+  --bg-surface: #18181b;
+  --bg-card: #27272a;
+  --bg-elevated: #3f3f46;
+
+  /* Borders */
+  --border: #3f3f46;
+  --border-strong: #52525b;
+  --border-accent: #10b981;
+  --border-danger: #ef4444;
+
+  /* Text */
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-inverse: #09090b;
+
+  /* Accents */
+  --accent: #10b981;
+  --accent-muted: rgba(16, 185, 129, 0.12);
+  --destructive: #ef4444;
+  --destructive-muted: rgba(239, 68, 68, 0.12);
+  --warning: #f59e0b;
+  --warning-muted: rgba(245, 158, 11, 0.12);
+  --success: #10b981;
+
+  /* Grid */
+  --grid-line: rgba(63, 63, 70, 0.4);
+  --grid-dot: rgba(113, 113, 122, 0.3);
+
+  /* Shadows (minimal) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+  /* shadcn remapping */
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #27272a;
+  --card-foreground: #fafafa;
+  --popover: #27272a;
+  --popover-foreground: #fafafa;
+  --primary: #10b981;
+  --primary-foreground: #09090b;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent-shadcn: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border-shadcn: #3f3f46;
+  --input: #3f3f46;
+  --ring: #10b981;
+  --sidebar-background: #18181b;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #09090b;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #3f3f46;
+  --sidebar-ring: #10b981;
+}
+
+/* ─── LIGHT THEME ─── */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-base: #fafafa;
+  --bg-surface: #f4f4f5;
+  --bg-card: #ffffff;
+  --bg-elevated: #e4e4e7;
+
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --border-accent: #059669;
+  --border-danger: #dc2626;
+
+  --text-primary: #09090b;
+  --text-secondary: #71717a;
+  --text-muted: #a1a1aa;
+  --text-inverse: #fafafa;
+
+  --accent: #059669;
+  --accent-muted: rgba(5, 150, 105, 0.08);
+  --destructive: #dc2626;
+  --destructive-muted: rgba(220, 38, 38, 0.08);
+  --warning: #d97706;
+  --warning-muted: rgba(217, 119, 6, 0.08);
+  --success: #059669;
+
+  --grid-line: rgba(228, 228, 231, 0.6);
+  --grid-dot: rgba(161, 161, 170, 0.3);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  --background: #fafafa;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #059669;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #09090b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent-shadcn: #f4f4f5;
+  --accent-foreground: #09090b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border-shadcn: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #059669;
+  --sidebar-background: #f4f4f5;
+  --sidebar-foreground: #71717a;
+  --sidebar-primary: #059669;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e4e4e7;
+  --sidebar-accent-foreground: #09090b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #059669;
+}
+
+/* ─── BASE LAYER ─── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--border);
+  }
+
+  body {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: var(--accent-muted);
+    color: var(--text-primary);
+  }
+
+  /* Font utilities */
+  .font-heading {
+    font-family: "Inter", system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  .font-data {
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ─── THEME TRANSITION ─── */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: background-color 300ms ease, color 200ms ease, border-color 200ms ease !important;
+}
+
+/* ─── COMPONENTS LAYER ─── */
+@layer components {
+
+  /* ── React Flow ── */
+  .react-flow {
+    --xy-background-color-default: transparent;
+  }
+
+  .react-flow__controls {
+    border: 1px solid var(--border);
+    border-radius: 0;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+
+  .react-flow__controls-button {
+    background: transparent;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    transition: background-color 120ms ease;
+  }
+
+  .react-flow__controls-button:hover {
+    background: var(--accent-muted);
+  }
+
+  .react-flow__controls-button:last-child {
+    border-bottom: none;
+  }
+
+  .react-flow__attribution {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 2px 8px;
+  }
+
+  .react-flow__node {
+    transition: box-shadow 150ms ease;
+  }
+
+  .react-flow__node.dragging,
+  .react-flow__node.dragging:hover {
+    transition: none !important;
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+  }
+
+  .react-flow__minimap {
+    border: 1px solid var(--border) !important;
+    border-radius: 0 !important;
+    overflow: hidden;
+  }
+
+  /* ── Animated edges ── */
+  .react-flow__edge-path {
+    stroke: var(--border-strong);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 4;
+    animation: edge-flow 2s linear infinite;
+  }
+
+  /* ── Node styles (sharp edge) ── */
+  .node {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    min-width: 180px;
+    transition: border-color 150ms ease;
+  }
+
+  .node:hover {
+    border-color: var(--border-strong);
+  }
+
+  .node--trigger {
+    border-left: 3px solid var(--accent);
+  }
+
+  .node--action {
+    border-left: 3px solid var(--border-strong);
+  }
+
+  .node__label {
+    font-family: "Inter", system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .node__label--trigger {
+    color: var(--accent);
+  }
+
+  .node__row {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .node-handle {
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-surface);
+    border-radius: 0;
+    transition: background 150ms ease;
+  }
+
+  .node-handle:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .node-handle--trigger {
+    border-color: var(--accent);
+  }
+
+  /* ── Status indicators ── */
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+  }
+
+  .status-dot--completed {
+    background: var(--success);
+  }
+
+  .status-dot--failed {
+    background: var(--destructive);
+  }
+
+  .status-dot--pending {
+    background: var(--warning);
+    animation: pulse-status 1.2s ease-in-out infinite;
+  }
+
+  /* ── Trade type indicators ── */
+  .trade-type--long {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .trade-type--short {
+    color: var(--destructive);
+    font-weight: 600;
+  }
+
+  .trade-btn {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    transition: all 150ms ease;
+    cursor: pointer;
+  }
+
+  .trade-btn[data-active="true"] {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  .trade-btn--long[data-active="true"] {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .trade-btn--short[data-active="true"] {
+    border-color: var(--destructive);
+    color: var(--destructive);
+  }
+
+  /* ── Shimmer (muted) ── */
+  .shimmer-sweep {
+    background: linear-gradient(
+      110deg,
+      transparent 25%,
+      rgba(16, 185, 129, 0.06) 37%,
+      transparent 50%
+    );
+    background-size: 300% 100%;
+    animation: shimmer-sweep 3s infinite;
+  }
+
+  /* ── Pending spinner ── */
+  .pending-spinner {
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--warning);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
+  }
+
+  /* ── shadcn overrides ── */
+
+  [data-slot="input"] {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+    border-radius: 0 !important;
+    color: var(--text-primary) !important;
+    font-family: "Inter", system-ui, sans-serif;
+    transition: border-color 150ms ease;
+  }
+
+  [data-slot="input"]:focus {
+    border-color: var(--accent) !important;
+    box-shadow: none !important;
+    outline: 1px solid var(--accent) !important;
+    outline-offset: -1px;
+  }
+
+  [data-slot="label"] {
+    font-family: "Inter", system-ui, sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  [data-slot="select-trigger"] {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+    border-radius: 0 !important;
+    color: var(--text-primary) !important;
+    transition: border-color 150ms ease;
+  }
+
+  [data-slot="select-trigger"]:focus,
+  [data-slot="select-trigger"][data-state="open"] {
+    border-color: var(--accent) !important;
+    outline: 1px solid var(--accent) !important;
+    outline-offset: -1px;
+    box-shadow: none !important;
+  }
+
+  [data-slot="select-content"] {
+    background: var(--bg-card) !important;
+    border-color: var(--border) !important;
+    border-radius: 0 !important;
+    box-shadow: var(--shadow-md) !important;
+  }
+
+  [data-slot="select-item"] {
+    color: var(--text-primary) !important;
+    border-radius: 0 !important;
+    transition: background 100ms ease;
+  }
+
+  [data-slot="select-item"][data-highlighted] {
+    background: var(--accent-muted) !important;
+    color: var(--text-primary) !important;
+  }
+
+  [data-slot="sheet-content"] {
+    background: var(--bg-surface) !important;
+    border-color: var(--border) !important;
+    border-radius: 0 !important;
+  }
+
+  [data-slot="sheet-overlay"] {
+    background: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  [data-slot="sheet-title"] {
+    font-family: "Inter", system-ui, sans-serif !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+  }
+
+  [data-slot="sheet-description"] {
+    color: var(--text-secondary) !important;
+  }
+
+  /* All buttons sharp */
+  button, [role="button"] {
+    border-radius: 0 !important;
+  }
+}
+
+/* ─── APP SIDEBAR ─── */
+
+.app-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 160px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+}
+
+.app-sidebar__brand {
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-sidebar__logo-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.app-sidebar__chevron {
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.app-sidebar__title {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.app-sidebar__version {
+  display: block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.app-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.app-sidebar__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: all 120ms ease;
+  border-left: 3px solid transparent;
+}
+
+.app-sidebar__nav-item:hover {
+  color: var(--text-secondary);
+  background: var(--bg-card);
+}
+
+.app-sidebar__nav-item--active {
+  color: var(--accent);
+  background: var(--accent-muted);
+  border-left-color: var(--accent);
+}
+
+/* ─── APP LAYOUT ─── */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-layout__content {
+  margin-left: 160px;
+  flex: 1;
+  min-height: 100vh;
+  background: var(--bg-base);
+}
+
+/* ─── STATUS BANNER ─── */
+
+.status-banner {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 24px 28px;
+  margin: 20px 24px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.status-banner__left {
+  flex: 1;
+}
+
+.status-banner__label {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.status-banner__heading {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.status-banner__subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.status-banner__stats {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+
+.status-banner__stat {
+  text-align: center;
+}
+
+.status-banner__stat-label {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.status-banner__stat-value {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--text-primary);
+}
+
+/* ─── SCHEMATICS SECTION ─── */
+
+.schematics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 12px;
+}
+
+.schematics-header__title {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ─── WORKFLOW CARD ─── */
+
+.workflow-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  padding: 0 24px 24px;
+}
+
+.workflow-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 16px;
+  transition: border-color 150ms ease;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.workflow-card:hover {
+  border-color: var(--border-strong);
+}
+
+.workflow-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.workflow-card__name {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.workflow-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+}
+
+.workflow-card__badge--active {
+  color: var(--accent);
+}
+
+.workflow-card__badge--inactive {
+  color: var(--text-muted);
+}
+
+.workflow-card__badge--draft {
+  color: var(--warning);
+}
+
+.workflow-card__badge-dot {
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+}
+
+.workflow-card__badge--active .workflow-card__badge-dot {
+  background: var(--accent);
+}
+
+.workflow-card__badge--inactive .workflow-card__badge-dot {
+  background: var(--text-muted);
+}
+
+.workflow-card__badge--draft .workflow-card__badge-dot {
+  background: var(--warning);
+}
+
+.workflow-card__preview {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  min-height: 48px;
+  align-items: center;
+  flex-wrap: wrap;
+  overflow: hidden;
+  max-height: 80px;
+}
+
+.workflow-card__mini-node {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.workflow-card__mini-node--trigger {
+  border-left: 2px solid var(--accent);
+}
+
+.workflow-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.workflow-card__meta {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* ─── TOGGLE SWITCH ─── */
+
+.toggle-switch {
+  position: relative;
+  width: 32px;
+  height: 16px;
+  background: var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+.toggle-switch--active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.toggle-switch__knob {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  transition: transform 0.2s;
+}
+.toggle-switch--active .toggle-switch__knob {
+  transform: translateX(16px);
+}
+.toggle-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── WORKFLOW TOP BAR ─── */
+
+.workflow-topbar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.workflow-topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workflow-topbar__back {
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  transition: color 120ms ease;
+}
+
+.workflow-topbar__back:hover {
+  color: var(--text-primary);
+}
+
+.workflow-topbar__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-topbar__name {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.workflow-topbar__meta {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 9px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.workflow-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── PROPERTIES PANEL ─── */
+
+.properties-panel {
+  width: 260px;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.properties-panel__title {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.properties-panel__section {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.properties-panel__section-title {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+.properties-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.properties-panel__row-key {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.properties-panel__row-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.properties-panel__row-value--accent {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ─── PROPERTIES PANEL NODE CARDS ─── */
+
+.properties-panel__node-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.properties-panel__node-card:last-child {
+  margin-bottom: 0;
+}
+
+.properties-panel__node-type {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.properties-panel__node-type--trigger {
+  color: var(--accent);
+}
+
+.properties-panel__node-summary {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+/* ─── NODE KEY-VALUE FORMAT ─── */
+
+.node__header-split {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.node__header-split--trigger {
+  color: var(--accent);
+}
+
+.node__title {
+  font-family: "Inter", system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.node__kv-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.node__kv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.node__kv-key {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.node__kv-value {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: right;
+}
+
+/* ─── COMMIT / ACTION BUTTONS ─── */
+
+.btn-commit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent);
+  color: var(--text-inverse);
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.btn-commit:hover {
+  opacity: 0.9;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.btn-ghost:hover {
+  color: var(--text-primary);
+}
+
+.btn-outline-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.btn-outline-sm:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-card);
+}
+
+/* ─── KEYFRAMES ─── */
+
+@keyframes edge-flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes pulse-status {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer-sweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Utility animations */
+.animate-fade-in {
+  animation: fade-in 300ms ease forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 300ms ease forwards;
+  opacity: 0;
+}
+
+/* ─── NOTIFICATION NODE ─── */
+
+.node--notification {
+  border-left: 3px solid #8b5cf6;
+}
+.node--notification .node__header-split {
+  color: #8b5cf6;
+  display: flex;
+  align-items: center;
+}
+
+/* ─── LIVE PRICE TICKER ─── */
+
+.price-ticker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border);
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+.price-ticker__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  padding: 0 16px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+}
+.price-ticker__label {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+}
+.price-ticker__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  animation: ticker-pulse 1.5s ease-in-out infinite;
+  margin-left: -14px;
+}
+@keyframes ticker-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.price-ticker__loading {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.price-ticker__coin {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.price-ticker__coin-name {
+  font-weight: 800;
+  color: var(--text-primary);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.price-ticker__coin-price {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.price-ticker__coin-change {
+  font-size: 10px;
+  font-weight: 600;
+}
+.price-ticker__coin-change--up {
+  color: #22c55e;
+}
+.price-ticker__coin-change--down {
+  color: #ef4444;
+}
+.price-ticker__coin-detail {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+/* Push all page content below the ticker */
+.app-with-ticker {
+  padding-top: 40px;
+}
