@@ -217,7 +217,7 @@ app.put("/workflow/:workflowId", authenticateToken, async (req: AuthenticatedReq
         const updatedWorkflow = await WorkflowModel.findOneAndUpdate(
             { _id: req.params.workflowId, userId },
             { $set: updateFields },
-            { new: true, runValidators: true }
+            { returnDocument: "after", runValidators: true }
         );
 
         if (!updatedWorkflow) {
@@ -281,7 +281,7 @@ app.patch("/workflow/:workflowId/toggle", authenticateToken, async (req: Authent
         const updatedWorkflow = await WorkflowModel.findOneAndUpdate(
             { _id: req.params.workflowId, userId },
             { $set: { isActive: newIsActive, status: newStatus } },
-            { new: true }
+            { returnDocument: "after" }
         );
 
         return res.status(200).json({
@@ -402,8 +402,9 @@ const startServer = async () => {
         }
 
         await connectToDatabase(mongoUri);
-        app.listen(3000, () => {
-            console.log("Server is running on port 3000");
+        const port = Number(process.env.PORT) || 3001;
+        app.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
         });
     } catch (error) {
         console.error("Mongo connection failed:", error);

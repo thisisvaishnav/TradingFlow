@@ -31,6 +31,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script_stop: true
           script: |
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$HOME/.local/share/pm2:$PATH"
+
             cd ~/tradingflow
 
             echo "==> Pulling latest code..."
@@ -39,11 +42,14 @@ jobs:
             echo "==> Installing dependencies..."
             bun install --frozen-lockfile
 
+            echo "==> Loading env for client build..."
+            set -a && source .env && set +a
+
             echo "==> Building all apps..."
             bun run build
 
             echo "==> Restarting PM2 processes..."
-            pm2 restart ecosystem.config.cjs
+            pm2 restart ecosystem.config.cjs --update-env
 
             echo "==> Deploy complete!"
             pm2 status

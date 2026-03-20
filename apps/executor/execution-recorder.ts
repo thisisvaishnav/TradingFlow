@@ -19,7 +19,7 @@ const completeExecution = async (executionId: string, output?: unknown) => {
   return ExecutionModel.findByIdAndUpdate(
     executionId,
     { status: "COMPLETED", endTime: new Date(), output },
-    { new: true },
+    { returnDocument: "after" },
   );
 };
 
@@ -28,7 +28,7 @@ const failExecution = async (executionId: string, error: string) => {
   return ExecutionModel.findByIdAndUpdate(
     executionId,
     { status: "FAILED", endTime: new Date(), error },
-    { new: true },
+    { returnDocument: "after" },
   );
 };
 
