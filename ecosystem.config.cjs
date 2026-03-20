@@ -5,6 +5,7 @@ module.exports = {
       cwd: "./apps/backend",
       script: "index.ts",
       interpreter: "bun",
+      interpreter_args: "--env-file ../../.env",
       env: {
         NODE_ENV: "production",
       },
@@ -14,6 +15,7 @@ module.exports = {
       cwd: "./apps/executor",
       script: "index.ts",
       interpreter: "bun",
+      interpreter_args: "--env-file ../../.env",
       env: {
         NODE_ENV: "production",
       },

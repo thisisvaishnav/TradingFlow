@@ -75,6 +75,7 @@
       "name": "executor",
       "dependencies": {
         "@react-email/components": "^1.0.10",
+        "@react-email/render": "^2.0.4",
         "common": "*",
         "db": "*",
         "lighter-sdk-ts": "*",
