@@ -1,0 +1,24 @@
+{
+  "name": "lighter-sdk-ts",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for lighter.xyz decentralized perpetuals exchange",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./signer": "./signer.ts",
+    "./ws": "./ws.ts",
+    "./types": "./types.ts",
+    "./errors": "./errors.ts"
+  },
+  "dependencies": {
+    "@types/node": "^24.9.1",
+    "@types/ws": "^8.18.1",
+    "axios": "^1.7.0",
+    "es6-promise": "^4.2.4",
+    "whatwg-fetch": "^3.0.0",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
