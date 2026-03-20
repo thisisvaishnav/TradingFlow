@@ -16,6 +16,7 @@
     "@react-email/components": "^1.0.10",
     "common": "*",
     "db": "*",
+    "lighter-sdk-ts": "*",
     "mongoose": "^9.3.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
