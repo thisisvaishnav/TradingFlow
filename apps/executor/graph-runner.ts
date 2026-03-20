@@ -107,7 +107,7 @@ export const executeWorkflowFromTrigger = async (
     });
 
     try {
-      const isNotification = node.data.kind === "notification" || node.type === "Email" || node.type === "Telegram";
+      const isNotification = node.data.kind === "NOTIFICATION" || node.type === "Email" || node.type === "Telegram";
 
       if (isNotification) {
         const handler = getNotificationHandler(node.type ?? "");
