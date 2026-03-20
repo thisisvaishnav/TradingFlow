@@ -64,7 +64,7 @@ const evaluateAndExecuteWorkflow = async (workflow: Workflow): Promise<void> => 
 
 const runPollCycle = async (): Promise<void> => {
   try {
-    const workflows = (await WorkflowModel.find().lean()) as unknown as Workflow[];
+    const workflows = (await WorkflowModel.find({ isActive: true }).lean()) as unknown as Workflow[];
 
     if (workflows.length === 0) {
       return;
