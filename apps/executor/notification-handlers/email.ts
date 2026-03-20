@@ -28,26 +28,40 @@ export const executeEmail = async (
   }
 
   console.log(`[email] Sending to ${to}: "${subject}"`);
+  console.log(`[email] From: ${EMAIL_FROM}`);
+  console.log(`[email] API key configured: ${RESEND_API_KEY ? "yes" : "NO"}`);
 
-  const { data, error } = await resend.emails.send({
-    from: EMAIL_FROM,
-    to: [to],
-    subject: subject || "TradingFlow Alert",
-    react: AlertEmail({ subject: subject || "TradingFlow Alert", body: body || "" }),
-  });
+  try {
+    const { data, error } = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: [to],
+      subject: subject || "TradingFlow Alert",
+      react: AlertEmail({
+        subject: subject || "TradingFlow Alert",
+        body: body || "",
+      }),
+    });
 
-  if (error) {
-    console.error("[email] Resend SDK error:", error);
+    if (error) {
+      console.error("[email] Resend SDK error:", error);
+      return {
+        success: false,
+        message: `Email send failed: ${error.message}`,
+      };
+    }
+
+    console.log(`[email] Sent successfully, id: ${data?.id}`);
+
+    return {
+      success: true,
+      message: `Email sent to ${to} (id: ${data?.id})`,
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown email error";
+    console.error("[email] Unhandled error during send:", message);
     return {
       success: false,
-      message: `Email send failed: ${error.message}`,
+      message: `Email send error: ${message}`,
     };
   }
-
-  console.log(`[email] Sent successfully, id: ${data?.id}`);
-
-  return {
-    success: true,
-    message: `Email sent to ${to} (id: ${data?.id})`,
-  };
 };
