@@ -34,7 +34,7 @@ jobs:
             export BUN_INSTALL="$HOME/.bun"
             export PATH="$BUN_INSTALL/bin:$HOME/.local/share/pm2:$PATH"
 
-            cd ~/tradingflow
+            cd ~/TradingFlow
 
             echo "==> Pulling latest code..."
             git pull origin main

@@ -101,7 +101,7 @@ This starts all three apps via Turborepo:
 | App | URL / Port | Description |
 |---|---|---|
 | **client** | `http://localhost:5173` | React UI |
-| **backend** | `http://localhost:3000` | REST API |
+| **backend** | `http://localhost:3001` | REST API |
 | **executor** | background process | Workflow poller & runner |
 
 ### Run individually
