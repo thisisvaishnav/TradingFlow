@@ -209,8 +209,8 @@ This starts all three apps via Turborepo:
 ### Run Individually
 
 ```bash
-bun run dev --filter=client     # Client only
-bun run dev --filter=backend    # Backend only
+bun run dev                     # Client only
+bun run dev                     # Backend only
 cd apps/executor && bun run dev # Executor only
 ```
 
