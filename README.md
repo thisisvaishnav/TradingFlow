@@ -21,7 +21,7 @@
 
 ---
 
-A **full-stack, workflow-based trading automation platform** built as a **Turborepo monorepo**. Users visually design trading workflows by connecting **triggers** (price alerts, timers) to **actions** (exchange orders) and **notifications** (email, Telegram) — and the system **executes them autonomously** in real time.
+**Trading automation platform**, which is a **workflow-driven platform that is designed for full-stack development and uses Turborepos monorepo architecture**. Users design workflows using visual drag-and-drop functionality to connect **triggers** (alert on price changes, timer), **actions** (orders at exchanges), and **notifications** (email, Telegram).
 
 ---
 
