@@ -1,4 +1,4 @@
-import { connectToDatabase, WorkflowModel } from "db/client";
+import { prisma, connectToDatabase } from "db/client";
 import type { PriceTriggerMetadata, TimerNodeMetadata } from "common";
 import {
   evaluatePriceTrigger,
@@ -41,7 +41,7 @@ const evaluateAndExecuteWorkflow = async (workflow: Workflow): Promise<void> => 
 
   for (const trigger of triggerNodes) {
     const triggerType = inferTriggerType(trigger);
-    const triggerId = `${workflow._id}:${trigger.id}`;
+    const triggerId = `${workflow.id}:${trigger.id}`;
     let fired = false;
 
     if (triggerType === "price") {
@@ -64,13 +64,23 @@ const evaluateAndExecuteWorkflow = async (workflow: Workflow): Promise<void> => 
 
 const runPollCycle = async (): Promise<void> => {
   try {
-    const workflows = (await WorkflowModel.find({ isActive: true }).lean()) as unknown as Workflow[];
+    const workflows = await prisma.workflow.findMany({
+      where: { isActive: true },
+    });
 
-    if (workflows.length === 0) {
+    // Cast Prisma result to the Workflow type expected by graph-runner
+    // nodes/edges are stored as Json (JSONB) and returned as unknown — cast to typed arrays
+    const typedWorkflows = workflows.map((w) => ({
+      ...w,
+      nodes: w.nodes as unknown as WorkflowNode[],
+      edges: w.edges as unknown as { id: string; source: string; target: string }[],
+    })) as unknown as Workflow[];
+
+    if (typedWorkflows.length === 0) {
       return;
     }
 
-    for (const workflow of workflows) {
+    for (const workflow of typedWorkflows) {
       if (isShuttingDown) {
         break;
       }
@@ -102,21 +112,22 @@ const handleShutdown = (signal: string) => {
     clearTimeout(pollTimeoutId);
   }
 
-  process.exit(0);
+  // Disconnect Prisma cleanly
+  prisma.$disconnect().finally(() => process.exit(0));
 };
 
 const start = async () => {
-  const mongoUri = process.env.MONGO_URI;
-  if (!mongoUri) {
-    console.error("[executor] MONGO_URI is not set — exiting.");
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    console.error("[executor] DATABASE_URL is not set — exiting.");
     process.exit(1);
   }
-  
+
   try {
-    await connectToDatabase(mongoUri);
-    console.log("[executor] Connected to MongoDB");
+    await connectToDatabase(databaseUrl);
+    console.log("[executor] Connected to PostgreSQL via Prisma");
   } catch (error) {
-    console.error("[executor] Failed to connect to MongoDB:", error);
+    console.error("[executor] Failed to connect to PostgreSQL:", error);
     process.exit(1);
   }
 

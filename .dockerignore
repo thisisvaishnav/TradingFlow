@@ -1,0 +1,45 @@
+# Dependencies (installed fresh in Docker)
+node_modules
+**/node_modules
+
+# Build outputs (built inside Docker)
+dist
+**/dist
+.next
+**/.next
+
+# Local env files (never in Docker context)
+.env
+.env.local
+.env.*
+
+# Git
+.git
+.gitignore
+.github
+
+# Turbo cache
+.turbo
+
+# Dev tools
+.cursor
+.vscode
+.idea
+
+# OS noise
+.DS_Store
+*.pem
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage
+
+# README / docs (not needed in image)
+README.md
+**/README.md
+**/CLAUDE.md
+test.txt

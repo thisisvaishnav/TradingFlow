@@ -1,0 +1,75 @@
+services:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Backend — Express REST API (Bun runtime)
+  # ─────────────────────────────────────────────────────────────────────────
+  tradingflow-backend:
+    image: ${DOCKER_IMAGE_PREFIX:-thisisvaishnav}/tradingflow-backend:latest
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    container_name: tradingflow-backend
+    ports:
+      - "3001:3001"       # ← 3001 (avoids conflict with CXE backend on 3000)
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Executor — Background DAG poller & workflow runner (Bun runtime, linux/amd64)
+  # No HTTP port — connects to PostgreSQL and runs triggers in the background
+  # ─────────────────────────────────────────────────────────────────────────
+  tradingflow-executor:
+    image: ${DOCKER_IMAGE_PREFIX:-thisisvaishnav}/tradingflow-executor:latest
+    build:
+      context: .
+      dockerfile: apps/executor/Dockerfile
+      platforms:
+        - linux/amd64       # Required: lighter-sdk-ts uses Bun FFI with a native amd64 .so
+    container_name: tradingflow-executor
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      EXECUTOR_POLL_INTERVAL_MS: ${EXECUTOR_POLL_INTERVAL_MS:-10000}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM: ${EMAIL_FROM}
+    depends_on:
+      tradingflow-backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Client — React UI (Nginx serving Vite static build)
+  # ─────────────────────────────────────────────────────────────────────────
+  tradingflow-client:
+    image: ${DOCKER_IMAGE_PREFIX:-thisisvaishnav}/tradingflow-client:latest
+    build:
+      context: .
+      dockerfile: apps/client/Dockerfile
+      args:
+        # Baked into the Vite bundle at build time — must be the public-facing URL
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+    container_name: tradingflow-client
+    ports:
+      - "8081:80"         # ← 8081 (avoids conflict with CXE frontend on 8080)
+    depends_on:
+      tradingflow-backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+# Use the same default network so containers can talk by service name
+# (tradingflow-backend, tradingflow-client, etc.)
+networks:
+  default:
+    name: tradingflow-network

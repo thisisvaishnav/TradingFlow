@@ -1,0 +1,71 @@
+// Prisma schema for TradingFlow
+// Database: PostgreSQL (Neon serverless)
+// Generator: Prisma Client (Bun-compatible)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+enum ExecutionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id        String     @id @default(cuid())
+  username  String     @unique
+  password  String
+  workflows Workflow[]
+
+  @@map("users")
+}
+
+model Workflow {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String          @default("Untitled Workflow")
+  status     WorkflowStatus  @default(DRAFT)
+  isActive   Boolean         @default(false)
+  // nodes and edges are stored as JSONB — flexible nested structures
+  // Each node: { id, type, position: {x,y}, data: { kind, metadata } }
+  // Each edge: { id, source, target }
+  nodes      Json            @default("[]")
+  edges      Json            @default("[]")
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  executions Execution[]
+
+  @@map("workflows")
+}
+
+model Execution {
+  id         String          @id @default(cuid())
+  workflowId String
+  workflow   Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  nodeId     String
+  nodeName   String          @default("Unknown Node")
+  status     ExecutionStatus
+  startTime  DateTime
+  endTime    DateTime?
+  error      String?
+  output     Json?
+
+  @@map("executions")
+}

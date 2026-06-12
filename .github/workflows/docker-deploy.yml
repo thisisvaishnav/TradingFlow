@@ -1,0 +1,123 @@
+name: Docker Build & Deploy — TradingFlow
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-tradingflow-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOCKER_IMAGE_PREFIX: ${{ secrets.DOCKERHUB_USERNAME }}
+
+jobs:
+  # ─── 1. Run existing CI checks first ───────────────────────────────────────
+  ci:
+    name: CI Checks
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  # ─── 2. Build & push Docker images to Docker Hub ───────────────────────────
+  docker-build-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    needs: ci
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ── Backend image ───────────────────────────────────────────────────
+      - name: Build & push — backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/tradingflow-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/tradingflow-backend:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to:   type=gha,scope=backend,mode=max
+
+      # ── Executor image (must be linux/amd64 for Bun FFI native .so) ────
+      - name: Build & push — executor
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/executor/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/tradingflow-executor:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/tradingflow-executor:${{ github.sha }}
+          cache-from: type=gha,scope=executor
+          cache-to:   type=gha,scope=executor,mode=max
+
+      # ── Client image (Vite build with baked-in API URL) ─────────────────
+      - name: Build & push — client
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/client/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/tradingflow-client:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/tradingflow-client:${{ github.sha }}
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+            # DATABASE_URL is not a build-arg for the client — only for backend/executor at runtime
+          cache-from: type=gha,scope=client
+          cache-to:   type=gha,scope=client,mode=max
+
+  # ─── 3. SSH into server and pull + restart containers ──────────────────────
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: docker-build-push
+    timeout-minutes: 10
+    environment: production
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host:     ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key:      ${{ secrets.SERVER_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+
+            echo "==> Moving to project directory..."
+            cd ~/TradingFlow
+
+            echo "==> Pulling latest code..."
+            git pull origin main
+
+            echo "==> Logging in to Docker Hub..."
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            echo "==> Pulling latest images..."
+            docker compose pull
+
+            echo "==> Restarting containers (zero-downtime recreate)..."
+            docker compose up -d --remove-orphans
+
+            echo "==> Cleaning up unused images..."
+            docker image prune -f
+
+            echo "==> Deploy complete! Container status:"
+            docker compose ps

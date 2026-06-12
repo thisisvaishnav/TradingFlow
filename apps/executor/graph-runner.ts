@@ -46,7 +46,7 @@ export type WorkflowEdge = {
 };
 
 export type Workflow = {
-  _id: string;
+  id: string;
   userId: string;
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
@@ -108,13 +108,13 @@ export const executeWorkflowFromTrigger = async (
 
   if (actionNodeIds.length === 0) {
     console.log(
-      `[graph-runner] Trigger ${triggerNodeId} in workflow ${workflow._id} has no downstream actions`,
+      `[graph-runner] Trigger ${triggerNodeId} in workflow ${workflow.id} has no downstream actions`,
     );
     return;
   }
 
   console.log(
-    `[graph-runner] Executing ${actionNodeIds.length} action(s) for workflow ${workflow._id}`,
+    `[graph-runner] Executing ${actionNodeIds.length} action(s) for workflow ${workflow.id}`,
   );
 
   for (const nodeId of actionNodeIds) {
@@ -124,7 +124,7 @@ export const executeWorkflowFromTrigger = async (
     }
 
     const execution = await createExecution({
-      workflowId: workflow._id,
+      workflowId: workflow.id,
       nodeId,
       nodeName: getNodeDisplayName(node),
     });
@@ -136,34 +136,34 @@ export const executeWorkflowFromTrigger = async (
         const handler = getNotificationHandler(node.type ?? "");
         if (!handler) {
           await failExecution(
-            execution._id.toString(),
+            execution.id,
             `No notification handler for node type "${node.type}"`,
           );
           console.warn(
-            `[graph-runner] Halting workflow ${workflow._id}: unknown notification type "${node.type}"`,
+            `[graph-runner] Halting workflow ${workflow.id}: unknown notification type "${node.type}"`,
           );
           return;
         }
 
         const result = await handler(node.data.metadata);
         if (!result.success) {
-          await failExecution(execution._id.toString(), result.message);
+          await failExecution(execution.id, result.message);
           console.warn(
-            `[graph-runner] Halting workflow ${workflow._id}: notification failed at node ${nodeId}`,
+            `[graph-runner] Halting workflow ${workflow.id}: notification failed at node ${nodeId}`,
           );
           return;
         }
 
-        await completeExecution(execution._id.toString(), result);
+        await completeExecution(execution.id, result);
       } else {
         const adapter = getExchangeAdapter(node.type ?? "");
         if (!adapter) {
           await failExecution(
-            execution._id.toString(),
+            execution.id,
             `No exchange adapter for node type "${node.type}"`,
           );
           console.warn(
-            `[graph-runner] Halting workflow ${workflow._id}: unknown node type "${node.type}"`,
+            `[graph-runner] Halting workflow ${workflow.id}: unknown node type "${node.type}"`,
           );
           return;
         }
@@ -172,25 +172,25 @@ export const executeWorkflowFromTrigger = async (
         const result = await adapter(metadata);
 
         if (!result.success) {
-          await failExecution(execution._id.toString(), result.message);
+          await failExecution(execution.id, result.message);
           console.warn(
-            `[graph-runner] Halting workflow ${workflow._id}: action failed at node ${nodeId}`,
+            `[graph-runner] Halting workflow ${workflow.id}: action failed at node ${nodeId}`,
           );
           return;
         }
 
-        await completeExecution(execution._id.toString(), result);
+        await completeExecution(execution.id, result);
       }
 
       console.log(
-        `[graph-runner] Node ${nodeId} completed in workflow ${workflow._id}`,
+        `[graph-runner] Node ${nodeId} completed in workflow ${workflow.id}`,
       );
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unknown execution error";
-      await failExecution(execution._id.toString(), errorMessage);
+      await failExecution(execution.id, errorMessage);
       console.error(
-        `[graph-runner] Halting workflow ${workflow._id}: unhandled error at node ${nodeId}:`,
+        `[graph-runner] Halting workflow ${workflow.id}: unhandled error at node ${nodeId}:`,
         errorMessage,
       );
       return;
@@ -198,6 +198,6 @@ export const executeWorkflowFromTrigger = async (
   }
 
   console.log(
-    `[graph-runner] Workflow ${workflow._id} execution completed successfully`,
+    `[graph-runner] Workflow ${workflow.id} execution completed successfully`,
   );
 };
