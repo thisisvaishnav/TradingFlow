@@ -1,6 +1,6 @@
 <p align="center">
   <img src=".github/banner.png" alt="TradingFlow" width="100%" />
-</p>
+</p
 
 <h3 align="center">Visual Trading Automation for Crypto Markets</h3>
 
