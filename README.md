@@ -2,8 +2,7 @@
   <img src=".github/banner.png" alt="TradingFlow" width="100%" />
 </p
 
-<h3 align="center">Visual Trading Automation for Crypto Markets</h3>
-
+<h3 align="center">Visual Trading Automation for Crypto Markets </h3>
 <p align="center">
   Design workflows. Connect exchanges. Automate trades.
 </p>
