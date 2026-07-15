@@ -6,7 +6,6 @@
 <p align="center">
   Design workflows. Connect exchanges. Automate trades.
 </p>
-
 <p align="center">
   <a href="https://github.com/thisisvaishnav/TradingFlow/actions/workflows/ci.yml"><img src="https://github.com/thisisvaishnav/TradingFlow/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
   <img src="https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun&logoColor=000" alt="Bun" />
